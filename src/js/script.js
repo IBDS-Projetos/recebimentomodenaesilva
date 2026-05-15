@@ -1,22 +1,13 @@
 // === CONFIGURAÇÃO SUPABASE (variáveis de ambiente) ===
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validação de variáveis de ambiente
-if (!SUPABASE_URL || !SUPABASE_KEY) {
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     console.error('❌ ERRO: Variáveis de ambiente Supabase não configuradas!');
     console.error('📝 Verifique o arquivo .env:');
     console.error('   - VITE_SUPABASE_URL:', SUPABASE_URL ? '✓ Configurado' : '✗ Faltando');
-    console.error('   - VITE_SUPABASE_KEY:', SUPABASE_KEY ? '✓ Configurado' : '✗ Faltando');
-    
-    // Mostrar alerta apenas se o documento estiver pronto
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            alert('⚠️ Erro de Configuração!\n\nAs credenciais do Supabase não foram encontradas.\nVerifique o arquivo .env e recarregue a página.');
-        });
-    } else {
-        alert('⚠️ Erro de Configuração!\n\nAs credenciais do Supabase não foram encontradas.\nVerifique o arquivo .env e recarregue a página.');
-    }
+    console.error('   - VITE_SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? '✓ Configurado' : '✗ Faltando');
 }
 
 let supabaseClient = null;
@@ -25,13 +16,19 @@ try {
     if (typeof supabase === 'undefined') {
         throw new Error('Biblioteca Supabase não foi carregada corretamente');
     }
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('✅ Supabase conectado com sucesso!');
 } catch (error) {
     console.error('❌ Erro ao conectar ao Supabase:', error);
 }
 
-Chart.register(ChartDataLabels);
+try {
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    }
+} catch (e) {
+    console.warn('⚠️ Erro ao registrar ChartDataLabels:', e.message);
+}
 let recebimentos = [];
 let currentStatusFilter = 'Todos';
 let chartStatus, chartForn;
@@ -146,18 +143,28 @@ if (localStorage.getItem('darkMode') === '1') {
 }
 
 // ─── 1. Buscar dados ─────────────────────────────────────────────────
+let _fetchController = null;
+
 async function fetchRecebimentos() {
     if (!supabaseClient) {
         console.error('❌ Supabase não foi inicializado corretamente');
         return;
     }
 
+    if (_fetchController) {
+        _fetchController.abort();
+    }
+    _fetchController = new AbortController();
+    const signal = _fetchController.signal;
+
     try {
         console.log('🔄 Carregando dados do Supabase...');
         const { data, error } = await supabaseClient
             .from('recebimentos')
-            .select('*')
+            .select('*', { signal })
             .order('dataPrevisao', { ascending: false });
+
+        if (signal.aborted) return;
 
         if (error) {
             console.error("❌ Erro ao carregar dados:", error);
@@ -166,7 +173,6 @@ async function fetchRecebimentos() {
                 codigo: error.code,
                 status: error.status
             });
-            alert(`Erro ao carregar dados:\n${error.message}`);
             return;
         }
         
@@ -174,12 +180,14 @@ async function fetchRecebimentos() {
         recebimentos = data;
         applyFilters();
     } catch (err) {
+        if (err.name === 'AbortError') return;
         console.error("❌ Exceção ao buscar dados:", err);
-        alert('Erro de conexão com o banco de dados. Verifique sua internet e as credenciais.');
     }
 }
 
 // ─── 2. Realtime ──────────────────────────────────────────────────────
+let _realtimeTimeout = null;
+
 function setupRealtime() {
     if (!supabaseClient) {
         console.warn('⚠️ Supabase não está inicializado - Realtime desabilitado');
@@ -190,8 +198,11 @@ function setupRealtime() {
         supabaseClient
             .channel('tabela-mudancas')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'recebimentos' }, () => {
-                console.log('🔄 Atualizando dados em tempo real...');
-                fetchRecebimentos();
+                if (_realtimeTimeout) clearTimeout(_realtimeTimeout);
+                _realtimeTimeout = setTimeout(() => {
+                    console.log('🔄 Atualizando dados em tempo real...');
+                    fetchRecebimentos();
+                }, 500);
             })
             .subscribe((status) => {
                 if (status === 'SUBSCRIBED') {
@@ -337,14 +348,16 @@ window.closeAgendaModal = function() {
 window.openModal = function() {
     const modal = getElement('modal');
     const title = getElement('modalTitle');
-    if (modal) modal.classList.add('active');
+    if (!modal) return;
+    modal.classList.add('active');
     if (title) title.innerText = "Novo Recebimento";
 };
 window.closeModal = function() {
     const modal = getElement('modal');
     const form = getElement('recusaForm');
     const index = getElement('editIndex');
-    if (modal) modal.classList.remove('active');
+    if (!modal) return;
+    modal.classList.remove('active');
     if (form) form.reset();
     if (index) index.value = "";
 };
@@ -539,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             if (!supabaseClient) {
-                alert('❌ Erro: Banco de dados não inicializado');
+                console.error('❌ Erro: Banco de dados não inicializado');
                 return;
             }
 
@@ -566,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const { data, error } = await supabaseClient.from('recebimentos').insert([obj]);
                     if (error) {
                         console.error("❌ Erro ao salvar:", error);
-                        alert(`Erro ao salvar:\n${error.message}\n\nDica: Verifique se a tabela 'recebimentos' existe no Supabase`);
+                        console.error(`Erro ao salvar:\n${error.message}\n\nDica: Verifique se a tabela 'recebimentos' existe no Supabase`);
                         return;
                     }
                     console.log('✅ Registro inserido com sucesso');
@@ -575,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const { error } = await supabaseClient.from('recebimentos').update(obj).eq('id', dbId);
                     if (error) {
                         console.error("❌ Erro ao atualizar:", error);
-                        alert(`Erro ao atualizar:\n${error.message}`);
+                        console.error(`Erro ao atualizar:\n${error.message}`);
                         return;
                     }
                     console.log('✅ Registro atualizado com sucesso');
@@ -584,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchRecebimentos();
             } catch (err) {
                 console.error("❌ Exceção ao salvar/atualizar:", err);
-                alert('Erro ao processar solicitação. Verifique o console.');
+                console.error('Erro ao processar solicitação. Verifique o console.');
             }
         });
     }
@@ -624,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (_pendingDeleteId === null) return;
             
             if (!supabaseClient) {
-                alert('❌ Erro: Banco de dados não inicializado');
+                console.error('❌ Erro: Banco de dados não inicializado');
                 return;
             }
 
@@ -636,20 +649,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error } = await supabaseClient.from('recebimentos').delete().eq('id', id);
                 if (error) {
                     console.error("❌ Erro ao excluir:", error);
-                    alert(`Erro ao excluir:\n${error.message}`);
+                    console.error(`Erro ao excluir:\n${error.message}`);
                     return;
                 }
                 console.log('✅ Registro deletado com sucesso');
                 fetchRecebimentos();
             } catch (err) {
                 console.error("❌ Exceção ao deletar:", err);
-                alert('Erro ao deletar. Verifique o console.');
+                console.error('Erro ao deletar. Verifique o console.');
             }
         });
     }
 
-    // Verifica atrasos a cada 60 segundos
-    setInterval(() => applyFilters(), 60000);
+    // Verifica atrasos a cada 60 segundos (só quando a aba está visível)
+    setInterval(() => {
+        if (!document.hidden) applyFilters();
+    }, 60000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) applyFilters();
+    });
 
     // INICIALIZAÇÃO
     fetchRecebimentos();
@@ -679,13 +697,17 @@ window.editRecusa = function(id) {
 let _pendingDeleteId = null;
 
 function openDeleteModal(id) {
+    const modal = getElement('deleteConfirmModal');
+    if (!modal) return;
     _pendingDeleteId = id;
-    document.getElementById('deleteConfirmModal').classList.add('active');
+    modal.classList.add('active');
 }
 
 function closeDeleteModal() {
     _pendingDeleteId = null;
-    document.getElementById('deleteConfirmModal').classList.remove('active');
+    const modal = getElement('deleteConfirmModal');
+    if (!modal) return;
+    modal.classList.remove('active');
 }
 
 window.deleteRecusa = function(id) {
@@ -713,7 +735,7 @@ window.exportFilteredExcel = function() {
         return matchSearch && matchStatus && matchDate;
     }).sort((a, b) => (b.dataPrevisao || '').localeCompare(a.dataPrevisao || ''));
 
-    if (filtered.length === 0) { alert("Não há dados para exportar com os filtros atuais."); return; }
+    if (filtered.length === 0) { console.warn("Não há dados para exportar com os filtros atuais."); return; }
     
     const exportData = filtered.map(r => ({
         Fornecedor: r.fornecedor,

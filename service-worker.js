@@ -50,23 +50,27 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    const url = new URL(event.request.url);
+
+    // Não cachear chamadas de API (Supabase, CDNs dinâmicos)
+    if (url.hostname.includes('supabase') || url.hostname.includes('supabase.co')) {
+        event.respondWith(fetch(event.request).catch(() => new Response(null, { status: 503 })));
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then(response => {
                 if (response) {
-                    console.log('[SW] Retornando do cache:', event.request.url);
                     return response;
                 }
                 
-                // Se não estiver no cache, tentar buscar da rede
                 return fetch(event.request)
                     .then(response => {
-                        // Não cachear respostas non-successful
                         if (!response || response.status !== 200 || response.type === 'error') {
                             return response;
                         }
 
-                        // Clonar a resposta
                         const responseToCache = response.clone();
 
                         caches.open(CACHE_NAME)
@@ -76,9 +80,7 @@ self.addEventListener('fetch', event => {
 
                         return response;
                     })
-                    .catch(err => {
-                        console.log('[SW] Erro de rede:', err);
-                        // Retornar uma resposta offline se necessário
+                    .catch(() => {
                         return new Response('Offline - recurso não disponível', {
                             status: 503,
                             statusText: 'Service Unavailable'
