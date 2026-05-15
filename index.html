@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recebimento - Agendamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<<<<<<< HEAD
+=======
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png">
+    <script>
+<<<<<<< HEAD
+        // Service Worker apenas em produção (evita conflitos com HMR em dev)
+        if ('serviceWorker' in navigator && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
+=======
+        // Evitar erro de service worker assíncrono
+        if ('serviceWorker' in navigator) {
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+            navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+                .then(reg => console.log('✅ Service Worker registrado'))
+                .catch(err => console.log('ℹ️ Service Worker não registrado:', err.message));
+        }
+    </script>
+</head>
+<body class="bg-[#f1f5f9] text-slate-900">
+
+    <button class="btn-sidebar-show visible" id="btnShowSidebar" onclick="toggleSidebar()" title="Mostrar menu">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="app-wrapper">
+        <aside class="sidebar collapsed" id="sidebar">
+            <div class="sidebar-inner">
+                <div class="sidebar-header">
+                    <div class="sidebar-logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-boxes-stacked"></i>
+                        </div>
+                        <div class="logo-text">
+                            <span class="logo-title">Recebimento</span>
+                            <span class="logo-subtitle">Agendamento</span>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button onclick="openModal()" class="nav-item nav-item-primary">
+                        <div class="nav-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <span class="nav-label">Novo Recebimento</span>
+                    </button>
+
+                    <button onclick="openAgendaModal()" class="nav-item">
+                        <div class="nav-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <span class="nav-label">Disponibilidade</span>
+                    </button>
+<<<<<<< HEAD
+
+                    <button onclick="openNFSearchModal()" class="nav-item">
+                        <div class="nav-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <span class="nav-label">Cadastro de NF</span>
+                    </button>
+=======
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+                </nav>
+
+                <div class="sidebar-footer">
+                    <button class="btn-sidebar-toggle" onclick="toggleSidebar()" title="Ocultar menu">
+                        <i class="fas fa-chevron-left" id="sidebarToggleIcon"></i>
+                        <span>Fechar Menu</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="main-inner">
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-black text-indigo-900 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-clock text-indigo-500"></i> Resumo de Agendamentos: Hoje
+                        </h2>
+                        <div class="flex items-center gap-3">
+                            <button onclick="exportFilteredExcel()" title="Exportar para Excel" class="export-btn">
+                                <i class="fas fa-file-excel"></i>
+                                <span class="hidden sm:inline">EXPORTAR</span>
+                            </button>
+                            <span id="dataAtualTxt" class="text-[10px] font-bold text-slate-400 bg-slate-200 px-3 py-1 rounded-full" style="font-family:Arial,sans-serif;">--/--/--</span>
+                            <button onclick="toggleDarkMode()" id="btnDarkMode" title="Alternar modo noturno" class="dark-toggle-btn">
+                                <span class="dark-toggle-track">
+                                    <span class="dark-toggle-thumb" id="darkModeThumb">
+                                        <i class="fas fa-sun" id="darkModeIcon"></i>
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="containerResumoHoje" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+                </div>
+
+                <hr class="mb-8 border-slate-200">
+
+<<<<<<< HEAD
+                <h2 class="text-sm font-black text-indigo-900 uppercase tracking-wider flex items-center gap-2 mb-4">
+                    <i class="fas fa-chart-simple text-indigo-500"></i> Indicadores Gerais
+                </h2>
+
+=======
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-indigo-500 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total Geral</p>
+                        <h3 id="statTotalRecusas" class="text-xl font-black text-slate-700">0</h3>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-blue-400 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Em Descarga</p>
+                        <h3 id="statAndamento" class="text-xl font-black text-slate-700">0</h3>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-slate-500 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Volume Total</p>
+                        <h3 id="statQtd" class="text-xl font-black text-slate-700">0</h3>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Custo da Carga</p>
+                        <h3 id="statValor" class="text-lg font-black text-emerald-600 truncate">R$ 0,00</h3>
+                    </div>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-6 mb-6">
+<<<<<<< HEAD
+=======
+                    <div class="lg:w-1/2 flex flex-col gap-4">
+                        <div class="glass-card p-5 rounded-2xl shadow-sm">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block italic">Pesquisar Fluxo Completo</label>
+                            <input type="text" id="globalSearch" placeholder="NF, Fornecedor ou Produto..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-400 mb-4">
+                            <div class="grid grid-cols-2 gap-2 mb-4">
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase">De (Previsão)</label>
+                                    <input type="date" id="filterDateStart" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase">Até (Previsão)</label>
+                                    <input type="date" id="filterDateEnd" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
+                                </div>
+                            </div>
+                            <div class="flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-full overflow-x-auto no-scrollbar">
+                                <button onclick="setStatusFilter('Todos')" id="btnTodos" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all bg-white shadow text-indigo-600 whitespace-nowrap">TODOS</button>
+                                <button onclick="setStatusFilter('Agendado')" id="btnAgendado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">AGENDADO</button>
+                                <button onclick="setStatusFilter('Em Descarga')" id="btnAndamento" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">DESCARGA</button>
+                                <button onclick="setStatusFilter('Concluído')" id="btnFinalizado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">CONCLUÍDO</button>
+                            </div>
+                        </div>
+                    </div>
+
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+                    <div class="lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="glass-card p-4 rounded-2xl shadow-sm chart-card-wrapper" id="chartWrapStatus">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">Status Operacional</h4>
+                            <button class="btn-expand-chart" title="Tela cheia" onclick="expandChart('chartWrapStatus')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <div class="chart-box"><canvas id="chartStatus"></canvas></div>
+                        </div>
+                        <div class="glass-card p-4 rounded-2xl shadow-sm chart-card-wrapper" id="chartWrapForn">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">Agendamentos Solicitados</h4>
+                            <button class="btn-expand-chart" title="Tela cheia" onclick="expandChart('chartWrapForn')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <div class="chart-box"><canvas id="chartFornecedor"></canvas></div>
+                        </div>
+                    </div>
+<<<<<<< HEAD
+                    <div class="lg:w-1/2">
+                        <div class="glass-card p-4 rounded-2xl shadow-sm chart-card-wrapper" id="chartWrapVol">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">Volume Total por Fornecedor</h4>
+                            <button class="btn-expand-chart" title="Tela cheia" onclick="expandChart('chartWrapVol')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <div class="chart-box"><canvas id="chartVolumeFornecedor"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl shadow-sm mb-6">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block italic">Pesquisar Fluxo Completo</label>
+                    <input type="text" id="globalSearch" placeholder="NF, Fornecedor ou Produto..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-400 mb-4">
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">De (Previsão)</label>
+                            <input type="date" id="filterDateStart" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">Até (Previsão)</label>
+                            <input type="date" id="filterDateEnd" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
+                        </div>
+                    </div>
+                    <div class="flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-full overflow-x-auto no-scrollbar">
+                        <button onclick="setStatusFilter('Todos')" id="btnTodos" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all bg-white shadow text-indigo-600 whitespace-nowrap">TODOS</button>
+                        <button onclick="setStatusFilter('Agendado')" id="btnAgendado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">AGENDADO</button>
+                        <button onclick="setStatusFilter('Em Descarga')" id="btnAndamento" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">DESCARGA</button>
+                        <button onclick="setStatusFilter('Concluído')" id="btnFinalizado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">CONCLUÍDO</button>
+                    </div>
+=======
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+                </div>
+
+                <div class="glass-card rounded-2xl shadow-sm border border-slate-200 flex flex-col bg-white">
+                    <div class="overflow-x-auto overflow-y-auto max-h-[380px] custom-scroll relative rounded-2xl">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 text-[10px] text-slate-400 uppercase font-bold sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="px-6 py-4 bg-slate-50">Fornecedor</th>
+                                    <th class="px-6 py-4 bg-slate-50">Carga / NF</th>
+                                    <th class="px-6 py-4 bg-slate-50">Agendamento</th>
+                                    <th class="px-6 py-4 bg-slate-50">Volume / Valor</th>
+                                    <th class="px-6 py-4 bg-slate-50">Status</th>
+                                    <th class="px-6 py-4 bg-slate-50 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div style="height:1.5rem;"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl w-full max-w-4xl p-8 shadow-2xl max-h-[95vh] overflow-y-auto custom-scroll">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 id="modalTitle" class="text-xl font-black text-slate-800 uppercase">Entrada de Mercadoria</h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <form id="recusaForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="hidden" id="editIndex">
+                <div class="md:col-span-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Fornecedor</label>
+                    <input required type="text" id="fornecedor" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">NF(s) Entrada</label>
+                    <input required type="text" id="nfO" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Produto Principal</label>
+                    <input required type="text" id="prod" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Solicitação</label>
+                    <input required type="date" id="dataSolicitacao" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Previsão</label>
+                    <input required type="date" id="dataPrevisao" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">H. Início</label>
+                        <input required type="time" id="horarioPrevisto" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">H. Término</label>
+                        <input required type="time" id="horarioFim" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Status Operacional</label>
+                    <select id="status" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                        <option value="Agendado">Agendado</option>
+                        <option value="Em Descarga">Em Descarga</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Volume</label>
+                    <input required type="number" id="qtd" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Valor Total (R$)</label>
+                    <input required type="text" id="vUnit" oninput="formatarMoeda(this)" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Observações</label>
+                    <textarea id="observacoes" rows="2" class="w-full p-2.5 bg-slate-50 border rounded-lg outline-none focus:border-indigo-400 resize-none" placeholder="Detalhes adicionais..."></textarea>
+                </div>
+                <div class="md:col-span-3 pt-4">
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 shadow-lg uppercase transition">Confirmar Recebimento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="agendaModal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl w-full max-w-2xl p-6 shadow-2xl max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b pb-4">
+                <div>
+                    <h2 class="text-lg font-black text-slate-800 uppercase leading-none">Disponibilidade de Horários</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Grade: 08:00 às 18:00 (30 min)</p>
+                </div>
+                <button onclick="closeAgendaModal()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="mb-4">
+                <label class="text-[9px] font-bold text-slate-400 uppercase">Selecionar Data:</label>
+                <input type="date" id="checkAgendaDate" onchange="renderAgendaGrid()" class="w-full p-2 bg-slate-50 border rounded-lg text-sm outline-none">
+            </div>
+            <div class="overflow-y-auto flex-1 pr-2 custom-scroll">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 sticky top-0 z-10">
+                        <tr class="text-[10px] uppercase text-slate-400 border-b">
+                            <th class="p-3 text-left bg-slate-50">Horário</th>
+                            <th class="p-3 text-left bg-slate-50">Status / Fornecedor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agendaGridBody" class="divide-y text-xs"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<<<<<<< HEAD
+    <div id="nfSearchModal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl max-h-[95vh] flex flex-col overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-500 px-8 py-6 shrink-0">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-file-invoice text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-white uppercase leading-tight">Buscar NF-e</h2>
+                            <p class="text-[10px] text-indigo-200 font-bold uppercase">Importar dados de XML</p>
+                        </div>
+                    </div>
+                    <button onclick="closeNFSearchModal()" class="text-white/60 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+                </div>
+            </div>
+            <div class="p-6 space-y-4 shrink-0">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Número da Nota Fiscal</label>
+                    <div class="relative mt-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+                        <input type="text" id="nfSearchInput" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition text-sm" placeholder="Ex: 312604">
+                    </div>
+                </div>
+                <button onclick="searchNFOnComputer()" id="btnSearchNF" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-bold py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-600 shadow-lg shadow-indigo-200 uppercase transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-file-import"></i>
+                    <span>Buscar NF-e em XML</span>
+                </button>
+                <button onclick="selectSearchFolder()" class="w-full bg-slate-100 text-slate-600 font-semibold py-2.5 rounded-xl hover:bg-slate-200 border border-slate-200 transition flex items-center justify-center gap-2 text-xs">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Selecionar Pasta</span>
+                </button>
+                <div id="nfSearchLoading" class="hidden text-center py-6">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-indigo-50 flex items-center justify-center">
+                        <i class="fas fa-spinner fa-spin text-indigo-600 text-xl"></i>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-3 font-medium">Processando arquivos XML...</p>
+                </div>
+            </div>
+            <div id="nfFileList" class="hidden px-6 pb-4 overflow-y-auto custom-scroll flex-1 min-h-0">
+                <hr class="mb-3 border-slate-200">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Arquivos Encontrados</div>
+                <div id="nfFileListItems" class="space-y-1.5"></div>
+            </div>
+            <div id="nfSearchResult" class="hidden px-6 pb-4 shrink-0">
+                <hr class="mb-3 border-slate-200">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                    <i class="fas fa-circle-check text-emerald-500"></i> Dados Extraídos
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2 text-sm" id="nfResultData"></div>
+                <button onclick="useNFData()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold py-3 rounded-xl hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-200 uppercase transition mt-4 flex items-center justify-center gap-2">
+                    <i class="fas fa-check"></i> Usar Dados no Cadastro
+                </button>
+            </div>
+        </div>
+    </div>
+
+=======
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+    <div id="deleteConfirmModal">
+        <div class="delete-modal-box">
+            <div class="delete-modal-icon"><i class="fas fa-trash-alt"></i></div>
+            <div class="delete-modal-title">Excluir Registro</div>
+            <div class="delete-modal-desc">Tem certeza que deseja excluir este registro?<br><strong>Esta ação não poderá ser desfeita.</strong></div>
+            <div class="delete-modal-actions">
+                <button class="btn-cancel-delete" onclick="closeDeleteModal()"><i class="fas fa-times" style="margin-right:6px;"></i>Cancelar</button>
+                <button class="btn-confirm-delete" id="btnConfirmDelete"><i class="fas fa-trash-alt" style="margin-right:6px;"></i>Excluir</button>
+            </div>
+        </div>
+    </div>
+
+<<<<<<< HEAD
+    <div id="notificationModal" class="notification-overlay fixed inset-0 bg-black/40 backdrop-blur-sm items-center justify-center p-4 z-[9999] hidden">
+        <div class="notification-box bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+            <div id="notificationIcon" class="notification-icon-container bg-amber-50 px-6 py-6 flex justify-center items-center">
+                <i class="fas fa-exclamation-circle text-amber-500 text-4xl"></i>
+            </div>
+            <div class="px-6 py-5 text-center">
+                <h3 id="notificationTitle" class="text-lg font-black text-slate-800 mb-2 uppercase">Aviso</h3>
+                <p id="notificationMessage" class="text-sm text-slate-600 leading-relaxed mb-6">Mensagem de notificação</p>
+                <button id="notificationButton" onclick="closeNotificationModal()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold py-3 rounded-xl hover:from-amber-600 hover:to-amber-700 transition shadow-lg uppercase text-sm">
+                    Entendi
+                </button>
+            </div>
+        </div>
+    </div>
+
+=======
+>>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
+    <script type="module" src="/src/js/script.js"></script>
+</body>
+</html>
