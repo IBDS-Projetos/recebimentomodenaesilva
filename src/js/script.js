@@ -669,6 +669,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!document.hidden) applyFilters();
     });
 
+    // Filtro padrão: últimos 15 dias
+    const hoje = new Date();
+    const quinzeDiasAtras = new Date(hoje);
+    quinzeDiasAtras.setDate(hoje.getDate() - 15);
+    const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (filterDateStart) filterDateStart.value = fmt(quinzeDiasAtras);
+    if (filterDateEnd) filterDateEnd.value = fmt(hoje);
+
     // INICIALIZAÇÃO
     fetchRecebimentos();
     if (supabaseClient) {
@@ -703,12 +711,12 @@ function openDeleteModal(id) {
     modal.classList.add('active');
 }
 
-function closeDeleteModal() {
+window.closeDeleteModal = function() {
     _pendingDeleteId = null;
     const modal = getElement('deleteConfirmModal');
     if (!modal) return;
     modal.classList.remove('active');
-}
+};
 
 window.deleteRecusa = function(id) {
     openDeleteModal(id);
