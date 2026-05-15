@@ -1,11 +1,7 @@
 // Service Worker para PWA - Agendamento de Recebimento
 // Este arquivo gerencia o cache e sincronização offline
 
-<<<<<<< HEAD
 const CACHE_NAME = 'agendamento-v2';
-=======
-const CACHE_NAME = 'agendamento-v1';
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 const urlsToCache = [
     '/',
     '/index.html',
@@ -49,14 +45,11 @@ self.addEventListener('activate', event => {
 
 // Interceptar requisições
 self.addEventListener('fetch', event => {
-<<<<<<< HEAD
     // Ignorar requisições de schemas não suportados (chrome-extension, etc)
     if (!event.request.url.startsWith('http://') && !event.request.url.startsWith('https://')) {
         return;
     }
 
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     // Apenas para requisições GET
     if (event.request.method !== 'GET') {
         return;

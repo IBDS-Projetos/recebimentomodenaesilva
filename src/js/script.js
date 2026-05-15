@@ -1,12 +1,7 @@
-<<<<<<< HEAD
 import { createClient } from '@supabase/supabase-js';
 
 // === CONFIGURAÇÃO SUPABASE (variáveis de ambiente) ===
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
-=======
-// === CONFIGURAÇÃO SUPABASE (variáveis de ambiente) ===
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validação de variáveis de ambiente
@@ -19,15 +14,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 let supabaseClient = null;
 try {
-<<<<<<< HEAD
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-=======
-    // Verificar se supabase está disponível
-    if (typeof supabase === 'undefined') {
-        throw new Error('Biblioteca Supabase não foi carregada corretamente');
-    }
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     console.log('✅ Supabase conectado com sucesso!');
 } catch (error) {
     console.error('❌ Erro ao conectar ao Supabase:', error);
@@ -42,11 +29,7 @@ try {
 }
 let recebimentos = [];
 let currentStatusFilter = 'Todos';
-<<<<<<< HEAD
 let chartStatus, chartForn, chartVol;
-=======
-let chartStatus, chartForn;
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 
 const timeSlots = [];
 for (let h = 8; h <= 18; h++) {
@@ -123,7 +106,6 @@ window.toggleSidebar = function() {
     }
 };
 
-<<<<<<< HEAD
 // Fechar sidebar ao clicar fora
 document.addEventListener('click', function(e) {
     const sidebar = getElement('sidebar');
@@ -134,8 +116,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 // ─── Fullscreen ───────────────────────────────────────────────────────
 window.expandChart = function(cardId) {
     const el = getElement(cardId);
@@ -148,11 +128,7 @@ window.expandChart = function(cardId) {
 };
 
 document.addEventListener('fullscreenchange', () => {
-<<<<<<< HEAD
     [chartStatus, chartForn, chartVol].forEach(c => { if (c) c.resize(); });
-=======
-    [chartStatus, chartForn].forEach(c => { if (c) c.resize(); });
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     document.querySelectorAll('.btn-expand-chart i').forEach(icon => {
         icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
     });
@@ -180,10 +156,7 @@ let _fetchController = null;
 async function fetchRecebimentos() {
     if (!supabaseClient) {
         console.error('❌ Supabase não foi inicializado corretamente');
-<<<<<<< HEAD
         showNotification('Erro de Conexão', 'Banco de dados não inicializado. Recarregue a página.', 'fa-exclamation-circle', 'error');
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
         return;
     }
 
@@ -200,14 +173,10 @@ async function fetchRecebimentos() {
             .select('*', { signal })
             .order('dataPrevisao', { ascending: false });
 
-<<<<<<< HEAD
         if (signal.aborted) {
             console.log('ℹ️ Requisição cancelada');
             return;
         }
-=======
-        if (signal.aborted) return;
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 
         if (error) {
             console.error("❌ Erro ao carregar dados:", error);
@@ -216,7 +185,6 @@ async function fetchRecebimentos() {
                 codigo: error.code,
                 status: error.status
             });
-<<<<<<< HEAD
             showNotification(
                 'Erro ao Carregar Dados',
                 `${error.message || 'Erro desconhecido ao carregar dados'}`,
@@ -241,17 +209,6 @@ async function fetchRecebimentos() {
             'fa-exclamation-circle',
             'error'
         );
-=======
-            return;
-        }
-        
-        console.log(`✅ ${data.length} registros carregados com sucesso`);
-        recebimentos = data;
-        applyFilters();
-    } catch (err) {
-        if (err.name === 'AbortError') return;
-        console.error("❌ Exceção ao buscar dados:", err);
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     }
 }
 
@@ -295,10 +252,7 @@ function updateUI(data) {
 
     const agendamentosHoje = recebimentos.filter(r => r.dataPrevisao === hojeLocalStr);
 
-<<<<<<< HEAD
     const fVol = {};
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     data.forEach(r => {
         tQtd += parseFloat(r.qtd || 0);
         tVal += parseValor(r.vUnit);
@@ -306,10 +260,7 @@ function updateUI(data) {
         else if (r.status === 'Em Descarga') and++;
         else if (r.status === 'Agendado')    agend++;
         fMap[r.fornecedor] = (fMap[r.fornecedor] || 0) + 1;
-<<<<<<< HEAD
         fVol[r.fornecedor] = (fVol[r.fornecedor] || 0) + parseFloat(r.qtd || 0);
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     });
 
     const elTotal = getElement('statTotalRecusas');
@@ -324,11 +275,7 @@ function updateUI(data) {
 
     renderResumoHoje(agendamentosHoje);
     renderTable(data);
-<<<<<<< HEAD
     renderCharts(agend, and, fin, fMap, fVol);
-=======
-    renderCharts(agend, and, fin, fMap);
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 }
 
 // ─── 4. Resumo Hoje ───────────────────────────────────────────────────
@@ -340,31 +287,19 @@ function renderResumoHoje(lista) {
         return;
     }
     
-<<<<<<< HEAD
     if (!lista || lista.length === 0) {
         container.innerHTML = '<div class="col-span-full p-6 bg-slate-100 rounded-xl text-center text-slate-400 text-xs font-bold uppercase border-2 border-dashed border-slate-200">Nenhuma entrega prevista para hoje</div>';
         return;
     }
     
-=======
-    if (lista.length === 0) {
-        container.innerHTML = `<div class="col-span-full p-6 bg-slate-100 rounded-xl text-center text-slate-400 text-xs font-bold uppercase border-2 border-dashed border-slate-200">Nenhuma entrega prevista para hoje</div>`;
-        return;
-    }
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     container.innerHTML = lista.map(item => `
         <div class="card-hoje p-4 rounded-xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-start mb-2">
                 <span class="text-[11px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded" style="font-family:Arial,sans-serif;">${item.horarioPrevisto} - ${item.horarioFim || '...'}</span>
                 <span class="text-[9px] font-bold uppercase ${item.status === 'Concluído' ? 'text-emerald-500' : 'text-amber-500'}">${item.status}</span>
             </div>
-<<<<<<< HEAD
             <h4 class="text-xs font-black text-slate-800 truncate">${item.fornecedor || 'N/A'}</h4>
             <p class="text-[10px] text-slate-500 truncate mb-1">${item.prod || 'N/A'}</p>
-=======
-            <h4 class="text-xs font-black text-slate-800 truncate">${item.fornecedor}</h4>
-            <p class="text-[10px] text-slate-500 truncate mb-1">${item.prod}</p>
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
             ${item.observacoes ? `<p class="text-[9px] italic text-slate-400 truncate">Obs: ${item.observacoes}</p>` : ''}
         </div>
     `).join('');
@@ -379,7 +314,6 @@ function renderTable(data) {
         return;
     }
 
-<<<<<<< HEAD
     if (!data || data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 text-xs font-bold uppercase"><i class="fas fa-inbox mr-2"></i>Nenhum registro encontrado para os filtros selecionados.</td></tr>';
         return;
@@ -392,37 +326,22 @@ function renderTable(data) {
             const isAtrasado    = checkAtrasado(item);
         const rowClass      = isAtrasado ? 'row-atrasada' : 'hover:bg-slate-50';
         const statusDisplay = isAtrasado ? `${item.status || 'Agendado'} - ATRASADO` : (item.status || 'Agendado');
-=======
-    if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 text-xs font-bold uppercase">Nenhum registro encontrado para os filtros selecionados.</td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = data.map((item) => {
-        const isAtrasado    = checkAtrasado(item);
-        const rowClass      = isAtrasado ? 'row-atrasada' : 'hover:bg-slate-50';
-        const statusDisplay = isAtrasado ? `${item.status} - ATRASADO` : item.status;
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
         const statusColor   = isAtrasado
             ? 'bg-red-100 text-red-700'
             : (item.status === 'Concluído'   ? 'bg-green-100 text-green-700' :
                item.status === 'Em Descarga' ? 'bg-blue-100 text-blue-700'  : 'bg-slate-100 text-slate-700');
 
         const valNumerico = parseValor(item.vUnit);
-<<<<<<< HEAD
         const safeFornecedor = (item.fornecedor || 'N/A').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeProd = (item.prod || 'N/A').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeNF = (item.nfO || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeObs = (item.observacoes || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 
         return `
             <tr class="${rowClass} transition border-b border-slate-50">
                 <td class="px-6 py-4 font-bold text-slate-600">
                     <div class="flex items-center gap-2">
                         ${isAtrasado ? '<i class="fas fa-exclamation-triangle blink-icon" title="Carga Atrasada"></i>' : ''}
-<<<<<<< HEAD
                         ${safeFornecedor}
                     </div>
                     ${safeObs ? `<div class="text-[9px] font-normal text-slate-400 mt-1 italic">Obs: ${safeObs}</div>` : ''}
@@ -436,21 +355,6 @@ function renderTable(data) {
                     <div class="text-[10px] font-black uppercase">DAS ${item.horarioPrevisto || '--:--'} ÀS ${item.horarioFim || '--:--'}</div>
                 </td>
                 <td class="px-6 py-4 font-bold">${item.qtd || 0} VOL <br> <span class="text-emerald-600 italic">R$ ${valNumerico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></td>
-=======
-                        ${item.fornecedor}
-                    </div>
-                    ${item.observacoes ? `<div class="text-[9px] font-normal text-slate-400 mt-1 italic">Obs: ${item.observacoes}</div>` : ''}
-                </td>
-                <td class="px-6 py-4">
-                    <div class="font-semibold text-slate-800">${item.prod}</div>
-                    <div class="text-[10px] font-bold text-slate-400" style="font-family:Arial,sans-serif;">NF: ${item.nfO}</div>
-                </td>
-                <td class="px-6 py-4" style="font-family:Arial,sans-serif;">
-                    <div class="text-[9px] ${isAtrasado ? 'text-red-600' : 'text-indigo-600'} font-bold uppercase">PREV: ${fmtData(item.dataPrevisao)}</div>
-                    <div class="text-[10px] font-black uppercase">DAS ${item.horarioPrevisto} ÀS ${item.horarioFim || '--:--'}</div>
-                </td>
-                <td class="px-6 py-4 font-bold">${item.qtd} VOL <br> <span class="text-emerald-600 italic">R$ ${valNumerico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></td>
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 <td class="px-6 py-4">
                     <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase ${statusColor}">
                         ${statusDisplay}
@@ -463,13 +367,10 @@ function renderTable(data) {
             </tr>
         `;
     }).join('');
-<<<<<<< HEAD
     } catch (err) {
         console.error('❌ Erro ao renderizar tabela:', err);
         tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-red-400 text-xs font-bold uppercase">Erro ao renderizar dados</td></tr>';
     }
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 }
 
 // ─── 6. Modais ────────────────────────────────────────────────────────
@@ -535,11 +436,7 @@ window.renderAgendaGrid = function() {
 };
 
 // ─── 8. Gráficos ──────────────────────────────────────────────────────
-<<<<<<< HEAD
 function renderCharts(agend, and, fin, fMap, fVol) {
-=======
-function renderCharts(agend, and, fin, fMap) {
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     if (chartStatus) chartStatus.destroy();
     
     const chartStatusEl = getElement('chartStatus');
@@ -629,7 +526,6 @@ function renderCharts(agend, and, fin, fMap) {
             }
         }
     });
-<<<<<<< HEAD
 
     if (chartVol) chartVol.destroy();
     const volLabels = Object.keys(fVol || {});
@@ -724,31 +620,6 @@ function applyFilters() {
     } catch (err) {
         console.error('❌ Erro ao aplicar filtros:', err);
     }
-=======
-}
-
-// ─── 9. Filtros ───────────────────────────────────────────────────────
-function applyFilters() {
-    const searchEl = getElement('globalSearch');
-    const dateStartEl = getElement('filterDateStart');
-    const dateEndEl = getElement('filterDateEnd');
-    
-    const q = (searchEl?.value || '').toLowerCase();
-    const dateStart = dateStartEl?.value || '';
-    const dateEnd = dateEndEl?.value || '';
-    
-    const filtered  = recebimentos.filter(r => {
-        const matchSearch = (r.nfO || "").toLowerCase().includes(q)
-            || (r.fornecedor || "").toLowerCase().includes(q)
-            || (r.prod || "").toLowerCase().includes(q);
-        const matchStatus = (currentStatusFilter === 'Todos' || r.status === currentStatusFilter);
-        let matchDate = true;
-        if (dateStart) matchDate = matchDate && (r.dataPrevisao >= dateStart);
-        if (dateEnd)   matchDate = matchDate && (r.dataPrevisao <= dateEnd);
-        return matchSearch && matchStatus && matchDate;
-    }).sort((a, b) => (b.dataPrevisao || '').localeCompare(a.dataPrevisao || ''));
-    updateUI(filtered);
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 }
 
 window.setStatusFilter = function(status) {
@@ -793,11 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             if (!supabaseClient) {
-<<<<<<< HEAD
                 showNotification('Erro de Conexão', 'Banco de dados não inicializado. Tente recarregar a página.', 'fa-exclamation-circle', 'error');
-=======
-                console.error('❌ Erro: Banco de dados não inicializado');
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 return;
             }
 
@@ -805,20 +672,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const dbId = editIndexEl?.value || "";
             
             const obj = {
-<<<<<<< HEAD
                 fornecedor:      getElement('fornecedor')?.value?.trim() || '',
                 prod:            getElement('prod')?.value?.trim() || '',
                 nfO:             getElement('nfO')?.value?.trim() || '',
-=======
-                fornecedor:      getElement('fornecedor')?.value || '',
-                prod:            getElement('prod')?.value || '',
-                nfO:             getElement('nfO')?.value || '',
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 dataSolicitacao: getElement('dataSolicitacao')?.value || '',
                 dataPrevisao:    getElement('dataPrevisao')?.value || '',
                 horarioPrevisto: getElement('horarioPrevisto')?.value || '',
                 horarioFim:      getElement('horarioFim')?.value || '',
-<<<<<<< HEAD
                 qtd:             parseFloat(getElement('qtd')?.value || 0) || 0,
                 vUnit:           getElement('vUnit')?.value?.trim() || '',
                 status:          getElement('status')?.value || 'Agendado',
@@ -836,57 +696,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-=======
-                qtd:             getElement('qtd')?.value || '',
-                vUnit:           getElement('vUnit')?.value || '',
-                status:          getElement('status')?.value || 'Agendado',
-                observacoes:     getElement('observacoes')?.value || ''
-            };
-
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
             try {
                 if (dbId === "") {
                     console.log('➕ Inserindo novo registro...');
                     const { data, error } = await supabaseClient.from('recebimentos').insert([obj]);
                     if (error) {
                         console.error("❌ Erro ao salvar:", error);
-<<<<<<< HEAD
                         showNotification('Erro ao Salvar', `${error.message}`, 'fa-exclamation-circle', 'error');
                         return;
                     }
                     showNotification('Sucesso', 'Recebimento registrado com sucesso!', 'fa-circle-check', 'success');
-=======
-                        console.error(`Erro ao salvar:\n${error.message}\n\nDica: Verifique se a tabela 'recebimentos' existe no Supabase`);
-                        return;
-                    }
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                     console.log('✅ Registro inserido com sucesso');
                 } else {
                     console.log('✏️ Atualizando registro:', dbId);
                     const { error } = await supabaseClient.from('recebimentos').update(obj).eq('id', dbId);
                     if (error) {
                         console.error("❌ Erro ao atualizar:", error);
-<<<<<<< HEAD
                         showNotification('Erro ao Atualizar', `${error.message}`, 'fa-exclamation-circle', 'error');
                         return;
                     }
                     showNotification('Sucesso', 'Recebimento atualizado com sucesso!', 'fa-circle-check', 'success');
-=======
-                        console.error(`Erro ao atualizar:\n${error.message}`);
-                        return;
-                    }
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                     console.log('✅ Registro atualizado com sucesso');
                 }
                 window.closeModal();
                 fetchRecebimentos();
             } catch (err) {
                 console.error("❌ Exceção ao salvar/atualizar:", err);
-<<<<<<< HEAD
                 showNotification('Erro', 'Erro ao processar solicitação. Verifique o console.', 'fa-exclamation-circle', 'error');
-=======
-                console.error('Erro ao processar solicitação. Verifique o console.');
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
             }
         });
     }
@@ -910,11 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     if (globalSearch) {
-<<<<<<< HEAD
         globalSearch.addEventListener('input', debounceFilters);
-=======
-        globalSearch.addEventListener('input', applyFilters);
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     }
     
     if (filterDateStart) {
@@ -930,11 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (_pendingDeleteId === null) return;
             
             if (!supabaseClient) {
-<<<<<<< HEAD
                 showNotification('Erro de Conexão', 'Banco de dados não inicializado. Tente recarregar a página.', 'fa-exclamation-circle', 'error');
-=======
-                console.error('❌ Erro: Banco de dados não inicializado');
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 return;
             }
 
@@ -946,25 +774,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error } = await supabaseClient.from('recebimentos').delete().eq('id', id);
                 if (error) {
                     console.error("❌ Erro ao excluir:", error);
-<<<<<<< HEAD
                     showNotification('Erro ao Excluir', `${error.message}`, 'fa-exclamation-circle', 'error');
                     return;
                 }
                 showNotification('Sucesso', 'Registro excluído com sucesso!', 'fa-circle-check', 'success');
-=======
-                    console.error(`Erro ao excluir:\n${error.message}`);
-                    return;
-                }
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 console.log('✅ Registro deletado com sucesso');
                 fetchRecebimentos();
             } catch (err) {
                 console.error("❌ Exceção ao deletar:", err);
-<<<<<<< HEAD
                 showNotification('Erro', 'Erro ao deletar registro. Verifique o console.', 'fa-exclamation-circle', 'error');
-=======
-                console.error('Erro ao deletar. Verifique o console.');
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
             }
         });
     }
@@ -977,7 +795,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!document.hidden) applyFilters();
     });
 
-<<<<<<< HEAD
     // Filtro padrão: últimos 15 dias
     const hoje = new Date();
     const quinzeDiasAtras = new Date(hoje);
@@ -994,8 +811,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     // INICIALIZAÇÃO
     fetchRecebimentos();
     if (supabaseClient) {
@@ -1030,20 +845,12 @@ function openDeleteModal(id) {
     modal.classList.add('active');
 }
 
-<<<<<<< HEAD
 window.closeDeleteModal = function() {
-=======
-function closeDeleteModal() {
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     _pendingDeleteId = null;
     const modal = getElement('deleteConfirmModal');
     if (!modal) return;
     modal.classList.remove('active');
-<<<<<<< HEAD
 };
-=======
-}
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 
 window.deleteRecusa = function(id) {
     openDeleteModal(id);
@@ -1055,16 +862,11 @@ window.exportFilteredExcel = function() {
     const dateStartEl = getElement('filterDateStart');
     const dateEndEl = getElement('filterDateEnd');
     
-<<<<<<< HEAD
     const q = (searchEl?.value || '').toLowerCase().trim();
-=======
-    const q = (searchEl?.value || '').toLowerCase();
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     const dateStart = dateStartEl?.value || '';
     const dateEnd = dateEndEl?.value || '';
     
     const filtered  = recebimentos.filter(r => {
-<<<<<<< HEAD
         if (q) {
             const nf = (r.nfO || "").toLowerCase();
             const fornecedor = (r.fornecedor || "").toLowerCase();
@@ -1560,35 +1362,4 @@ window.useNFData = function() {
         console.error('❌ Erro ao usar dados de NF:', err);
         showNotification('Erro', 'Erro ao preencher formulário com dados de NF.', 'fa-exclamation-circle', 'error');
     }
-=======
-        const matchSearch = (r.nfO || "").toLowerCase().includes(q)
-            || (r.fornecedor || "").toLowerCase().includes(q)
-            || (r.prod || "").toLowerCase().includes(q);
-        const matchStatus = (currentStatusFilter === 'Todos' || r.status === currentStatusFilter);
-        let matchDate = true;
-        if (dateStart) matchDate = matchDate && (r.dataPrevisao >= dateStart);
-        if (dateEnd)   matchDate = matchDate && (r.dataPrevisao <= dateEnd);
-        return matchSearch && matchStatus && matchDate;
-    }).sort((a, b) => (b.dataPrevisao || '').localeCompare(a.dataPrevisao || ''));
-
-    if (filtered.length === 0) { console.warn("Não há dados para exportar com os filtros atuais."); return; }
-    
-    const exportData = filtered.map(r => ({
-        Fornecedor: r.fornecedor,
-        Produto: r.prod,
-        'NF': r.nfO,
-        'Data Previsão': r.dataPrevisao,
-        'Hora Início': r.horarioPrevisto,
-        'Hora Término': r.horarioFim || '',
-        Status: r.status,
-        Volume: r.qtd,
-        'Valor (R$)': r.vUnit,
-        Observações: r.observacoes || ''
-    }));
-    
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook  = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Recebimentos");
-    XLSX.writeFile(workbook, `Recebimento_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`);
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
 };

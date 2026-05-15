@@ -9,23 +9,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<<<<<<< HEAD
-=======
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     <link rel="stylesheet" href="/src/css/style.css">
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#4f46e5">
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo.png">
     <script>
-<<<<<<< HEAD
         // Service Worker apenas em produção (evita conflitos com HMR em dev)
         if ('serviceWorker' in navigator && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
-=======
-        // Evitar erro de service worker assíncrono
-        if ('serviceWorker' in navigator) {
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
             navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
                 .then(reg => console.log('✅ Service Worker registrado'))
                 .catch(err => console.log('ℹ️ Service Worker não registrado:', err.message));
@@ -67,7 +58,6 @@
                         </div>
                         <span class="nav-label">Disponibilidade</span>
                     </button>
-<<<<<<< HEAD
 
                     <button onclick="openNFSearchModal()" class="nav-item">
                         <div class="nav-icon">
@@ -75,8 +65,6 @@
                         </div>
                         <span class="nav-label">Cadastro de NF</span>
                     </button>
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 </nav>
 
                 <div class="sidebar-footer">
@@ -115,13 +103,10 @@
 
                 <hr class="mb-8 border-slate-200">
 
-<<<<<<< HEAD
                 <h2 class="text-sm font-black text-indigo-900 uppercase tracking-wider flex items-center gap-2 mb-4">
                     <i class="fas fa-chart-simple text-indigo-500"></i> Indicadores Gerais
                 </h2>
 
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div class="glass-card p-4 rounded-xl border-l-4 border-indigo-500 shadow-sm">
                         <p class="text-[10px] font-bold text-slate-400 uppercase">Total Geral</p>
@@ -142,32 +127,6 @@
                 </div>
 
                 <div class="flex flex-col lg:flex-row gap-6 mb-6">
-<<<<<<< HEAD
-=======
-                    <div class="lg:w-1/2 flex flex-col gap-4">
-                        <div class="glass-card p-5 rounded-2xl shadow-sm">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block italic">Pesquisar Fluxo Completo</label>
-                            <input type="text" id="globalSearch" placeholder="NF, Fornecedor ou Produto..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-400 mb-4">
-                            <div class="grid grid-cols-2 gap-2 mb-4">
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-400 uppercase">De (Previsão)</label>
-                                    <input type="date" id="filterDateStart" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
-                                </div>
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-400 uppercase">Até (Previsão)</label>
-                                    <input type="date" id="filterDateEnd" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
-                                </div>
-                            </div>
-                            <div class="flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-full overflow-x-auto no-scrollbar">
-                                <button onclick="setStatusFilter('Todos')" id="btnTodos" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all bg-white shadow text-indigo-600 whitespace-nowrap">TODOS</button>
-                                <button onclick="setStatusFilter('Agendado')" id="btnAgendado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">AGENDADO</button>
-                                <button onclick="setStatusFilter('Em Descarga')" id="btnAndamento" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">DESCARGA</button>
-                                <button onclick="setStatusFilter('Concluído')" id="btnFinalizado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">CONCLUÍDO</button>
-                            </div>
-                        </div>
-                    </div>
-
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                     <div class="lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="glass-card p-4 rounded-2xl shadow-sm chart-card-wrapper" id="chartWrapStatus">
                             <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">Status Operacional</h4>
@@ -184,7 +143,6 @@
                             <div class="chart-box"><canvas id="chartFornecedor"></canvas></div>
                         </div>
                     </div>
-<<<<<<< HEAD
                     <div class="lg:w-1/2">
                         <div class="glass-card p-4 rounded-2xl shadow-sm chart-card-wrapper" id="chartWrapVol">
                             <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">Volume Total por Fornecedor</h4>
@@ -215,8 +173,6 @@
                         <button onclick="setStatusFilter('Em Descarga')" id="btnAndamento" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">DESCARGA</button>
                         <button onclick="setStatusFilter('Concluído')" id="btnFinalizado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">CONCLUÍDO</button>
                     </div>
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
                 </div>
 
                 <div class="glass-card rounded-2xl shadow-sm border border-slate-200 flex flex-col bg-white">
@@ -333,7 +289,6 @@
         </div>
     </div>
 
-<<<<<<< HEAD
     <div id="nfSearchModal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl max-h-[95vh] flex flex-col overflow-hidden">
             <div class="bg-gradient-to-r from-indigo-600 to-indigo-500 px-8 py-6 shrink-0">
@@ -391,8 +346,6 @@
         </div>
     </div>
 
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     <div id="deleteConfirmModal">
         <div class="delete-modal-box">
             <div class="delete-modal-icon"><i class="fas fa-trash-alt"></i></div>
@@ -405,7 +358,6 @@
         </div>
     </div>
 
-<<<<<<< HEAD
     <div id="notificationModal" class="notification-overlay fixed inset-0 bg-black/40 backdrop-blur-sm items-center justify-center p-4 z-[9999] hidden">
         <div class="notification-box bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
             <div id="notificationIcon" class="notification-icon-container bg-amber-50 px-6 py-6 flex justify-center items-center">
@@ -421,8 +373,6 @@
         </div>
     </div>
 
-=======
->>>>>>> 2a11fc2cd97cf795d140c1ba248db9a88531b33e
     <script type="module" src="/src/js/script.js"></script>
 </body>
 </html>
