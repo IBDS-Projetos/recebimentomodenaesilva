@@ -16,8 +16,8 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo.png">
     <script>
-        // Evitar erro de service worker assíncrono
-        if ('serviceWorker' in navigator) {
+        // Service Worker apenas em produção (evita conflitos com HMR em dev)
+        if ('serviceWorker' in navigator && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
             navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
                 .then(reg => console.log('✅ Service Worker registrado'))
                 .catch(err => console.log('ℹ️ Service Worker não registrado:', err.message));

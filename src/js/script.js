@@ -1,5 +1,5 @@
 // === CONFIGURAÇÃO SUPABASE (variáveis de ambiente) ===
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+let SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validação de variáveis de ambiente
