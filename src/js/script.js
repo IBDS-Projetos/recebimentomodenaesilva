@@ -1,3 +1,9 @@
+// === Utilitário de debounce ===
+function debounce(fn, ms) {
+    let timer;
+    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+}
+
 // === CONFIGURAÇÃO SUPABASE (variáveis de ambiente) ===
 let SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -31,7 +37,7 @@ try {
 }
 let recebimentos = [];
 let currentStatusFilter = 'Todos';
-let chartStatus, chartForn;
+let chartStatus, chartForn, chartVol;
 
 const timeSlots = [];
 for (let h = 8; h <= 18; h++) {
@@ -108,6 +114,16 @@ window.toggleSidebar = function() {
     }
 };
 
+// Fechar sidebar ao clicar fora
+document.addEventListener('click', function(e) {
+    const sidebar = getElement('sidebar');
+    const btnShow = getElement('btnShowSidebar');
+    if (!sidebar || sidebar.classList.contains('collapsed')) return;
+    if (!sidebar.contains(e.target) && btnShow && !btnShow.contains(e.target)) {
+        toggleSidebar();
+    }
+});
+
 // ─── Fullscreen ───────────────────────────────────────────────────────
 window.expandChart = function(cardId) {
     const el = getElement(cardId);
@@ -120,7 +136,7 @@ window.expandChart = function(cardId) {
 };
 
 document.addEventListener('fullscreenchange', () => {
-    [chartStatus, chartForn].forEach(c => { if (c) c.resize(); });
+    [chartStatus, chartForn, chartVol].forEach(c => { if (c) c.resize(); });
     document.querySelectorAll('.btn-expand-chart i').forEach(icon => {
         icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
     });
@@ -225,6 +241,7 @@ function updateUI(data) {
 
     const agendamentosHoje = recebimentos.filter(r => r.dataPrevisao === hojeLocalStr);
 
+    const fVol = {};
     data.forEach(r => {
         tQtd += parseFloat(r.qtd || 0);
         tVal += parseValor(r.vUnit);
@@ -232,6 +249,7 @@ function updateUI(data) {
         else if (r.status === 'Em Descarga') and++;
         else if (r.status === 'Agendado')    agend++;
         fMap[r.fornecedor] = (fMap[r.fornecedor] || 0) + 1;
+        fVol[r.fornecedor] = (fVol[r.fornecedor] || 0) + parseFloat(r.qtd || 0);
     });
 
     const elTotal = getElement('statTotalRecusas');
@@ -246,7 +264,7 @@ function updateUI(data) {
 
     renderResumoHoje(agendamentosHoje);
     renderTable(data);
-    renderCharts(agend, and, fin, fMap);
+    renderCharts(agend, and, fin, fMap, fVol);
 }
 
 // ─── 4. Resumo Hoje ───────────────────────────────────────────────────
@@ -395,49 +413,43 @@ window.renderAgendaGrid = function() {
 };
 
 // ─── 8. Gráficos ──────────────────────────────────────────────────────
-function renderCharts(agend, and, fin, fMap) {
-    if (chartStatus) chartStatus.destroy();
-    
+function renderCharts(agend, and, fin, fMap, fVol) {
     const chartStatusEl = getElement('chartStatus');
     if (!chartStatusEl) return;
-    
-    chartStatus = new Chart(chartStatusEl, {
-        type: 'doughnut',
-        data: {
-            labels: ['Agendado', 'Em Descarga', 'Concluído'],
-            datasets: [{
-                data: [agend, and, fin],
-                backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: {
-                    display: true, position: 'right',
-                    labels: { boxWidth: 10, font: { size: 9, weight: 'bold', family: 'Arial' }, padding: 10 }
-                },
-                datalabels: {
-                    display: true, color: '#1e293b',
-                    font: { weight: 'bold', size: 9, family: 'Arial' },
-                    formatter: (value, ctx) => {
-                        const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                        return (sum > 0 && value > 0) ? (value * 100 / sum).toFixed(0) + "%" : '';
+
+    if (chartStatus) {
+        chartStatus.data.datasets[0].data = [agend, and, fin];
+        chartStatus.update('none');
+    } else {
+        chartStatus = new Chart(chartStatusEl, {
+            type: 'doughnut',
+            data: {
+                labels: ['Agendado', 'Em Descarga', 'Concluído'],
+                datasets: [{ data: [agend, and, fin], backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], borderWidth: 0 }]
+            },
+            options: {
+                maintainAspectRatio: false, cutout: '70%',
+                plugins: {
+                    legend: { display: true, position: 'right', labels: { boxWidth: 10, font: { size: 9, weight: 'bold', family: 'Arial' }, padding: 10 } },
+                    datalabels: {
+                        display: true, color: '#1e293b',
+                        font: { weight: 'bold', size: 9, family: 'Arial' },
+                        formatter: (value, ctx) => {
+                            const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            return (sum > 0 && value > 0) ? (value * 100 / sum).toFixed(0) + "%" : '';
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 
-    if (chartForn) chartForn.destroy();
-    const labels = Object.keys(fMap);
     const chartFornEl = getElement('chartFornecedor');
-
     if (!chartFornEl) return;
+    const labels = Object.keys(fMap);
 
     if (labels.length === 0) {
+        if (chartForn) { chartForn.destroy(); chartForn = null; }
         const ctx = chartFornEl.getContext('2d');
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.font = '10px Arial';
@@ -447,44 +459,60 @@ function renderCharts(agend, and, fin, fMap) {
         return;
     }
 
-    chartForn = new Chart(chartFornEl, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: labels.map(l => fMap[l]),
-                backgroundColor: '#6366f1',
-                borderRadius: 4
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            scales: {
-                y: { display: false },
-                x: {
-                    ticks: {
-                        font: { size: 8, family: 'Arial' },
-                        maxRotation: 90,
-                        minRotation: 90,
-                        autoSkip: false
-                    }
-                }
-            },
-            plugins: {
-                legend: { display: false },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'end',
-                    color: '#4f46e5',
-                    font: { weight: 'bold', size: 10, family: 'Arial' },
-                    formatter: (value) => value > 0 ? value : ''
-                }
-            },
-            layout: {
-                padding: { top: 20 }
+    if (chartForn) {
+        chartForn.data.labels = labels;
+        chartForn.data.datasets[0].data = labels.map(l => fMap[l]);
+        chartForn.update('none');
+    } else {
+        chartForn = new Chart(chartFornEl, {
+            type: 'bar',
+            data: { labels, datasets: [{ data: labels.map(l => fMap[l]), backgroundColor: '#6366f1', borderRadius: 4 }] },
+            options: {
+                maintainAspectRatio: false,
+                scales: { y: { display: false }, x: { ticks: { font: { size: 8, family: 'Arial' }, maxRotation: 90, minRotation: 90, autoSkip: false } } },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: { anchor: 'end', align: 'end', color: '#4f46e5', font: { weight: 'bold', size: 10, family: 'Arial' }, formatter: (v) => v > 0 ? v : '' }
+                },
+                layout: { padding: { top: 20 } }
             }
-        }
-    });
+        });
+    }
+
+    const chartVolEl = getElement('chartVolumeFornecedor');
+    if (!chartVolEl) return;
+    const volLabels = Object.keys(fVol || {});
+
+    if (volLabels.length === 0) {
+        if (chartVol) { chartVol.destroy(); chartVol = null; }
+        const ctx = chartVolEl.getContext('2d');
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '10px Arial';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'center';
+        ctx.fillText('Sem dados para exibir', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+    }
+
+    if (chartVol) {
+        chartVol.data.labels = volLabels;
+        chartVol.data.datasets[0].data = volLabels.map(l => fVol[l]);
+        chartVol.update('none');
+    } else {
+        chartVol = new Chart(chartVolEl, {
+            type: 'bar',
+            data: { labels: volLabels, datasets: [{ label: 'Volume Total', data: volLabels.map(l => fVol[l]), backgroundColor: '#10b981', borderRadius: 4 }] },
+            options: {
+                maintainAspectRatio: false, indexAxis: 'y',
+                scales: { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { grid: { display: false }, ticks: { font: { size: 8, weight: 'bold' } } } },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: { anchor: 'end', align: 'end', color: '#10b981', font: { weight: 'bold', size: 10, family: 'Arial' }, formatter: (v) => v > 0 ? v : '' }
+                },
+                layout: { padding: { top: 20 } }
+            }
+        });
+    }
 }
 
 // ─── 9. Filtros ───────────────────────────────────────────────────────
@@ -620,8 +648,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    const debouncedApply = debounce(applyFilters, 250);
+
     if (globalSearch) {
-        globalSearch.addEventListener('input', applyFilters);
+        globalSearch.addEventListener('input', debouncedApply);
     }
     
     if (filterDateStart) {
@@ -661,12 +691,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Verifica atrasos a cada 60 segundos (só quando a aba está visível)
-    setInterval(() => {
-        if (!document.hidden) applyFilters();
-    }, 60000);
+    // Reaplica filtros ao voltar para a aba (com debounce)
+    let visibilityTimer;
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) applyFilters();
+        if (!document.hidden) {
+            clearTimeout(visibilityTimer);
+            visibilityTimer = setTimeout(applyFilters, 500);
+        }
     });
 
     // Filtro padrão: últimos 15 dias
@@ -676,6 +707,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     if (filterDateStart) filterDateStart.value = fmt(quinzeDiasAtras);
     if (filterDateEnd) filterDateEnd.value = fmt(hoje);
+
+    // Enter no campo de busca NF usa a pasta salva
+    const nfInput = getElement('nfSearchInput');
+    if (nfInput) {
+        nfInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') searchNFOnComputer();
+        });
+    }
 
     // INICIALIZAÇÃO
     fetchRecebimentos();
@@ -762,4 +801,317 @@ window.exportFilteredExcel = function() {
     const workbook  = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Recebimentos");
     XLSX.writeFile(workbook, `Recebimento_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`);
+};
+
+// ─── IndexedDB ─────────────────────────────────────────────────────────
+const DB_NAME = 'NFSearchDB';
+const DB_STORE = 'handles';
+const DB_KEY = 'lastFolder';
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    });
+}
+
+async function dbSaveHandle(handle) {
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(handle, DB_KEY);
+    return new Promise((resolve, reject) => {
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror = e => { db.close(); reject(e.target.error); };
+    });
+}
+
+async function dbLoadHandle() {
+    try {
+        const db = await openDB();
+        const tx = db.transaction(DB_STORE, 'readonly');
+        const req = tx.objectStore(DB_STORE).get(DB_KEY);
+        return new Promise((resolve, reject) => {
+            req.onsuccess = () => { db.close(); resolve(req.result); };
+            req.onerror = e => { db.close(); reject(e.target.error); };
+        });
+    } catch {
+        return null;
+    }
+}
+
+// ─── 13. Busca NF-e ────────────────────────────────────────────────────
+let _nfDataCache = null;
+let _nfFileHandles = [];
+
+window.openNFSearchModal = async function() {
+    _nfDataCache = null;
+    _nfFileHandles = [];
+    const modal = getElement('nfSearchModal');
+    const result = getElement('nfSearchResult');
+    const fileList = getElement('nfFileList');
+    const loading = getElement('nfSearchLoading');
+    const input = getElement('nfSearchInput');
+    if (modal) modal.classList.add('active');
+    if (result) result.classList.add('hidden');
+    if (fileList) fileList.classList.add('hidden');
+    if (loading) loading.classList.add('hidden');
+    if (input) input.value = '';
+
+    // Tenta usar pasta salva automaticamente
+    const savedHandle = await dbLoadHandle();
+    if (savedHandle && typeof savedHandle.queryPermission === 'function') {
+        try {
+            const perm = await savedHandle.queryPermission({ mode: 'read' });
+            if (perm === 'granted') {
+                input.placeholder = 'Digite o número e pressione Enter...';
+                input._savedHandle = savedHandle;
+            } else if (perm === 'prompt') {
+                const granted = await savedHandle.requestPermission({ mode: 'read' });
+                if (granted === 'granted') {
+                    input.placeholder = 'Digite o número e pressione Enter...';
+                    input._savedHandle = savedHandle;
+                }
+            }
+        } catch {}
+    }
+};
+
+window.closeNFSearchModal = function() {
+    const modal = getElement('nfSearchModal');
+    if (modal) modal.classList.remove('active');
+};
+
+window.selectSearchFolder = async function() {
+    if (!window.showDirectoryPicker) {
+        alert('Seu navegador não suporta esta funcionalidade. Use Chrome ou Edge atualizado.');
+        return;
+    }
+    try {
+        const dirHandle = await window.showDirectoryPicker({ startIn: 'downloads', mode: 'read' });
+        const input = getElement('nfSearchInput');
+        if (input) input._savedHandle = dirHandle;
+        await dbSaveHandle(dirHandle);
+        if (input) input.placeholder = 'Pasta salva! Digite o número e pressione Enter...';
+    } catch (err) {
+        if (err.name === 'AbortError' || err.name === 'SecurityError') return;
+        console.error('Erro ao selecionar pasta:', err);
+        alert(`Erro ao selecionar pasta: ${err.message}`);
+    }
+};
+
+async function doSearch(searchTerm, dirHandle) {
+    const result = getElement('nfSearchResult');
+    const fileList = getElement('nfFileList');
+    const loading = getElement('nfSearchLoading');
+
+    if (result) result.classList.add('hidden');
+    if (fileList) fileList.classList.add('hidden');
+    if (loading) loading.classList.remove('hidden');
+
+    await new Promise(r => setTimeout(r, 50));
+
+    _nfFileHandles = [];
+    await scanDirForXML(dirHandle, searchTerm, _nfFileHandles);
+
+    if (loading) loading.classList.add('hidden');
+
+    if (_nfFileHandles.length === 1) {
+        parseSelectedNF(0);
+    } else if (_nfFileHandles.length > 1 && fileList) {
+        const container = getElement('nfFileListItems');
+        if (container) {
+            container.innerHTML = _nfFileHandles.map((f, i) => {
+                const before = f.name.slice(0, f.matchIdx);
+                const match = f.name.slice(f.matchIdx, f.matchIdx + searchTerm.length);
+                const after = f.name.slice(f.matchIdx + searchTerm.length);
+                return `<button onclick="parseSelectedNF(${i})" class="w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-indigo-50 transition border border-slate-200 text-xs font-mono truncate">
+                    ${escapeHtml(before)}<span class="bg-yellow-200 text-slate-900 font-bold px-0.5 rounded">${escapeHtml(match)}</span>${escapeHtml(after)}
+                </button>`;
+            }).join('');
+        }
+        fileList.classList.remove('hidden');
+    } else {
+        alert(`Nenhum arquivo XML com "${searchTerm}" encontrado na pasta selecionada.`);
+    }
+}
+
+window.searchNFOnComputer = async function() {
+    const input = getElement('nfSearchInput');
+    const searchTerm = input?.value.trim();
+    if (!searchTerm) {
+        alert('Digite o número da NF');
+        input?.focus();
+        return;
+    }
+
+    // Usar pasta salva se disponível
+    if (input && input._savedHandle) {
+        await doSearch(searchTerm, input._savedHandle);
+        return;
+    }
+
+    const loading = getElement('nfSearchLoading');
+
+    try {
+        let dirHandle;
+        let isRealHandle = false;
+        try {
+            if (!window.showDirectoryPicker) throw new Error('API não disponível');
+            dirHandle = await window.showDirectoryPicker({ startIn: 'downloads', mode: 'read' });
+            isRealHandle = true;
+        } catch (pickerErr) {
+            if (pickerErr.name === 'AbortError' || pickerErr.name === 'SecurityError') return;
+            const fallback = await pickFolderFallback();
+            if (!fallback) return;
+            dirHandle = fallback;
+        }
+
+        // Salva o handle real no IndexedDB
+        if (isRealHandle) {
+            try { await dbSaveHandle(dirHandle); } catch {}
+        }
+
+        await doSearch(searchTerm, dirHandle);
+    } catch (err) {
+        if (loading) loading.classList.add('hidden');
+        if (err.name === 'AbortError' || err.name === 'SecurityError') return;
+        console.error('Erro ao buscar NF:', err);
+        alert(`Erro ao buscar NF: ${err.message}`);
+    }
+};
+
+async function scanDirForXML(dirHandle, searchTerm, results) {
+    for await (const entry of dirHandle.values()) {
+        if (entry.kind === 'directory') {
+            try { await scanDirForXML(entry, searchTerm, results); } catch (_) {}
+        } else if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.xml')) {
+            const name = entry.name;
+            if (name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                results.push({ handle: entry, name, matchIdx: name.toLowerCase().indexOf(searchTerm.toLowerCase()) });
+            }
+        }
+    }
+}
+
+function pickFolderFallback() {
+    return new Promise((resolve, reject) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.webkitdirectory = true;
+
+        input.addEventListener('change', function() {
+            document.body.removeChild(this);
+            const files = this.files;
+            if (!files || files.length === 0) {
+                reject(new Error('Nenhum arquivo selecionado'));
+                return;
+            }
+            const entries = [];
+            const seen = new Set();
+            for (const f of files) {
+                const name = f.name;
+                if (!name.toLowerCase().endsWith('.xml')) continue;
+                if (!seen.has(name)) {
+                    seen.add(name);
+                    entries.push({ kind: 'file', name, getFile: () => f });
+                }
+            }
+            resolve({
+                kind: 'directory',
+                name: 'pasta',
+                values() {
+                    return {
+                        [Symbol.asyncIterator]() {
+                            let i = 0;
+                            return {
+                                next: () => i < entries.length
+                                    ? Promise.resolve({ value: entries[i++], done: false })
+                                    : Promise.resolve({ done: true })
+                            };
+                        }
+                    };
+                }
+            });
+        });
+
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        input.addEventListener('cancel', () => {
+            document.body.removeChild(input);
+            reject(new DOMException('Cancelado', 'AbortError'));
+        });
+        input.click();
+    });
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+window.parseSelectedNF = async function(index) {
+    const entry = _nfFileHandles[index];
+    if (!entry) return;
+
+    try {
+        const file = await entry.handle.getFile();
+        const text = await file.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(text, 'text/xml');
+
+        const emit = xmlDoc.getElementsByTagName('emit')[0];
+        const fornecedor = emit?.getElementsByTagName('xNome')[0]?.textContent || '';
+        const cnpj = emit?.getElementsByTagName('CNPJ')[0]?.textContent || '';
+
+        const vol = xmlDoc.getElementsByTagName('vol')[0];
+        const volume = vol?.getElementsByTagName('qVol')[0]?.textContent || '';
+
+        const detPag = xmlDoc.getElementsByTagName('detPag')[0];
+        const valor = detPag?.getElementsByTagName('vPag')[0]?.textContent || '';
+
+        const nNF = xmlDoc.getElementsByTagName('nNF')[0]?.textContent || '';
+
+        _nfDataCache = { fornecedor, cnpj, volume, valor, nfO: nNF };
+
+        const result = getElement('nfSearchResult');
+        const dataEl = getElement('nfResultData');
+        if (dataEl) {
+            dataEl.innerHTML = `
+                <div><span class="font-bold text-slate-500">NF:</span> ${nNF}</div>
+                <div><span class="font-bold text-slate-500">Fornecedor:</span> ${fornecedor}</div>
+                <div><span class="font-bold text-slate-500">CNPJ:</span> ${cnpj}</div>
+                <div><span class="font-bold text-slate-500">Volume:</span> ${volume}</div>
+                <div><span class="font-bold text-slate-500">Valor:</span> R$ ${parseFloat(valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            `;
+        }
+        if (result) result.classList.remove('hidden');
+    } catch (err) {
+        console.error('Erro ao ler arquivo:', err);
+        alert(`Erro ao ler arquivo: ${err.message}`);
+    }
+};
+
+window.useNFData = function() {
+    if (!_nfDataCache) return;
+
+    const fEl = getElement('fornecedor');
+    const nfEl = getElement('nfO');
+    const qtdEl = getElement('qtd');
+    const vEl = getElement('vUnit');
+    const titleEl = getElement('modalTitle');
+    const editIdx = getElement('editIndex');
+
+    if (fEl) fEl.value = _nfDataCache.fornecedor;
+    if (nfEl) nfEl.value = _nfDataCache.nfO;
+    if (qtdEl) qtdEl.value = _nfDataCache.volume;
+    if (vEl) {
+        vEl.value = _nfDataCache.valor;
+        formatarMoeda(vEl);
+    }
+    if (titleEl) titleEl.innerText = 'Novo Recebimento (via NF-e)';
+    if (editIdx) editIdx.value = '';
+
+    closeNFSearchModal();
+    window.openModal();
 };

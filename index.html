@@ -59,6 +59,13 @@
                         </div>
                         <span class="nav-label">Disponibilidade</span>
                     </button>
+
+                    <button onclick="openNFSearchModal()" class="nav-item">
+                        <div class="nav-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <span class="nav-label">Cadastro de NF</span>
+                    </button>
                 </nav>
 
                 <div class="sidebar-footer">
@@ -97,6 +104,10 @@
 
                 <hr class="mb-8 border-slate-200">
 
+                <h2 class="text-sm font-black text-indigo-900 uppercase tracking-wider flex items-center gap-2 mb-4">
+                    <i class="fas fa-chart-simple text-indigo-500"></i> Indicadores Gerais
+                </h2>
+
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div class="glass-card p-4 rounded-xl border-l-4 border-indigo-500 shadow-sm">
                         <p class="text-[10px] font-bold text-slate-400 uppercase">Total Geral</p>
@@ -117,29 +128,6 @@
                 </div>
 
                 <div class="flex flex-col lg:flex-row gap-6 mb-6">
-                    <div class="lg:w-1/2 flex flex-col gap-4">
-                        <div class="glass-card p-5 rounded-2xl shadow-sm">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block italic">Pesquisar Fluxo Completo</label>
-                            <input type="text" id="globalSearch" placeholder="NF, Fornecedor ou Produto..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-400 mb-4">
-                            <div class="grid grid-cols-2 gap-2 mb-4">
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-400 uppercase">De (Previsão)</label>
-                                    <input type="date" id="filterDateStart" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
-                                </div>
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-400 uppercase">Até (Previsão)</label>
-                                    <input type="date" id="filterDateEnd" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
-                                </div>
-                            </div>
-                            <div class="flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-full overflow-x-auto no-scrollbar">
-                                <button onclick="setStatusFilter('Todos')" id="btnTodos" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all bg-white shadow text-indigo-600 whitespace-nowrap">TODOS</button>
-                                <button onclick="setStatusFilter('Agendado')" id="btnAgendado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">AGENDADO</button>
-                                <button onclick="setStatusFilter('Em Descarga')" id="btnAndamento" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">DESCARGA</button>
-                                <button onclick="setStatusFilter('Concluído')" id="btnFinalizado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">CONCLUÍDO</button>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="glass-card p-4 rounded-2xl shadow-sm chart-card-wrapper" id="chartWrapStatus">
                             <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">Status Operacional</h4>
@@ -155,6 +143,36 @@
                             </button>
                             <div class="chart-box"><canvas id="chartFornecedor"></canvas></div>
                         </div>
+                    </div>
+                    <div class="lg:w-1/2">
+                        <div class="glass-card p-4 rounded-2xl shadow-sm chart-card-wrapper" id="chartWrapVol">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">Volume Total por Fornecedor</h4>
+                            <button class="btn-expand-chart" title="Tela cheia" onclick="expandChart('chartWrapVol')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <div class="chart-box"><canvas id="chartVolumeFornecedor"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl shadow-sm mb-6">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block italic">Pesquisar Fluxo Completo</label>
+                    <input type="text" id="globalSearch" placeholder="NF, Fornecedor ou Produto..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-400 mb-4">
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">De (Previsão)</label>
+                            <input type="date" id="filterDateStart" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase">Até (Previsão)</label>
+                            <input type="date" id="filterDateEnd" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-indigo-400">
+                        </div>
+                    </div>
+                    <div class="flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-full overflow-x-auto no-scrollbar">
+                        <button onclick="setStatusFilter('Todos')" id="btnTodos" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all bg-white shadow text-indigo-600 whitespace-nowrap">TODOS</button>
+                        <button onclick="setStatusFilter('Agendado')" id="btnAgendado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">AGENDADO</button>
+                        <button onclick="setStatusFilter('Em Descarga')" id="btnAndamento" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">DESCARGA</button>
+                        <button onclick="setStatusFilter('Concluído')" id="btnFinalizado" class="flex-1 py-1.5 px-2 text-[10px] font-bold rounded-md transition-all text-slate-500 whitespace-nowrap">CONCLUÍDO</button>
                     </div>
                 </div>
 
@@ -268,6 +286,63 @@
                     </thead>
                     <tbody id="agendaGridBody" class="divide-y text-xs"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="nfSearchModal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl max-h-[95vh] flex flex-col overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-500 px-8 py-6 shrink-0">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-file-invoice text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-white uppercase leading-tight">Buscar NF-e</h2>
+                            <p class="text-[10px] text-indigo-200 font-bold uppercase">Importar dados de XML</p>
+                        </div>
+                    </div>
+                    <button onclick="closeNFSearchModal()" class="text-white/60 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+                </div>
+            </div>
+            <div class="p-6 space-y-4 shrink-0">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Número da Nota Fiscal</label>
+                    <div class="relative mt-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+                        <input type="text" id="nfSearchInput" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition text-sm" placeholder="Ex: 312604">
+                    </div>
+                </div>
+                <button onclick="searchNFOnComputer()" id="btnSearchNF" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-bold py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-600 shadow-lg shadow-indigo-200 uppercase transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-file-import"></i>
+                    <span>Buscar NF-e em XML</span>
+                </button>
+                <button onclick="selectSearchFolder()" class="w-full bg-slate-100 text-slate-600 font-semibold py-2.5 rounded-xl hover:bg-slate-200 border border-slate-200 transition flex items-center justify-center gap-2 text-xs">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Selecionar Pasta</span>
+                </button>
+                <div id="nfSearchLoading" class="hidden text-center py-6">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-indigo-50 flex items-center justify-center">
+                        <i class="fas fa-spinner fa-spin text-indigo-600 text-xl"></i>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-3 font-medium">Processando arquivos XML...</p>
+                </div>
+            </div>
+            <div id="nfFileList" class="hidden px-6 pb-4 overflow-y-auto custom-scroll flex-1 min-h-0">
+                <hr class="mb-3 border-slate-200">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Arquivos Encontrados</div>
+                <div id="nfFileListItems" class="space-y-1.5"></div>
+            </div>
+            <div id="nfSearchResult" class="hidden px-6 pb-4 shrink-0">
+                <hr class="mb-3 border-slate-200">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                    <i class="fas fa-circle-check text-emerald-500"></i> Dados Extraídos
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2 text-sm" id="nfResultData"></div>
+                <button onclick="useNFData()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold py-3 rounded-xl hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-200 uppercase transition mt-4 flex items-center justify-center gap-2">
+                    <i class="fas fa-check"></i> Usar Dados no Cadastro
+                </button>
             </div>
         </div>
     </div>
